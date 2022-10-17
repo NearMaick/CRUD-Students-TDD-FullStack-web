@@ -54,11 +54,11 @@ class Student {
 type IStudentDataRequestDTO = Omit<Student, "id" | "createdAt">;
 
 interface StudentsRepository {
-  create(data: IStudentDataRequestDTO): Promise<void>;
+  create(data: IStudent): Promise<void>;
 }
 
 interface IStudentDataDTO {
-  data: IStudentDataRequestDTO;
+  data: IStudent;
 }
 
 //  ----------------
@@ -66,12 +66,7 @@ interface IStudentDataDTO {
 export class InMemoryStudentsRepository implements StudentsRepository {
   public students: IStudentDataDTO[] = [];
 
-  async create({
-    id,
-    name,
-    email,
-    createdAt,
-  }: IStudentDataRequestDTO): Promise<void> {
+  async create({ id, name, email, createdAt }: IStudent): Promise<void> {
     this.students.push({
       data: {
         id,
@@ -112,16 +107,15 @@ describe("CreateStudent use", () => {
         name: "John Doe",
       })
     ).resolves.not.toThrow();
-    // console.log(inMemoryStudentsRepository.students[0].data);
     expect(inMemoryStudentsRepository.students[0].data.name).toEqual(
       "John Doe"
     );
+    expect(inMemoryStudentsRepository.students[0].data.email).toEqual(
+      "email@test.com"
+    );
     expect(inMemoryStudentsRepository.students[0].data).toHaveProperty("id");
+    expect(inMemoryStudentsRepository.students[0].data).toHaveProperty(
+      "createdAt"
+    );
   });
 });
-
-// it("should be able to create a new student", async () => {
-
-//   expect(inMemoryStudentsRepository.students[0].data.email).toEqual(
-//     "email@test.com"
-//   );

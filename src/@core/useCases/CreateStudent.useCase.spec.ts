@@ -53,19 +53,18 @@ class Student {
 
 type IStudentDataRequestDTO = Omit<Student, "id" | "createdAt">;
 
-interface StudentsRepository {
-  create(data: IStudent): Promise<void>;
-}
-
 interface IStudentDataDTO {
   data: IStudent;
 }
 
 //  ----------------
+interface StudentsRepository {
+  create(data: IStudent): Promise<void>;
+  findByEmail(email: string): Promise<IStudentDataDTO | undefined>;
+}
 
 export class InMemoryStudentsRepository implements StudentsRepository {
   public students: IStudentDataDTO[] = [];
-
   async create({ id, name, email, createdAt }: IStudent): Promise<void> {
     this.students.push({
       data: {
@@ -76,12 +75,24 @@ export class InMemoryStudentsRepository implements StudentsRepository {
       },
     });
   }
+
+  async findByEmail(email: string): Promise<IStudentDataDTO | undefined> {
+    return this.students.find((student) => student.data.email === email);
+  }
 }
 
-class CreateStudent {
+class CreateStudentUseCase {
   constructor(private studentsRepository: StudentsRepository) {}
 
   async execute({ name, email }: IStudentDataRequestDTO) {
+    const studentAlreadyExists = await this.studentsRepository.findByEmail(
+      email
+    );
+
+    if (studentAlreadyExists) {
+      throw new Error("This email enrolled already");
+    }
+
     const student = new Student({
       email,
       name,
@@ -91,13 +102,13 @@ class CreateStudent {
   }
 }
 
-describe("CreateStudent use", () => {
+describe("CreateStudent useCase", () => {
   let inMemoryStudentsRepository: InMemoryStudentsRepository;
-  let createStudent: CreateStudent;
+  let createStudent: CreateStudentUseCase;
 
   beforeEach(() => {
     inMemoryStudentsRepository = new InMemoryStudentsRepository();
-    createStudent = new CreateStudent(inMemoryStudentsRepository);
+    createStudent = new CreateStudentUseCase(inMemoryStudentsRepository);
   });
 
   it("should be able to create a new student", async () => {
@@ -117,5 +128,19 @@ describe("CreateStudent use", () => {
     expect(inMemoryStudentsRepository.students[0].data).toHaveProperty(
       "createdAt"
     );
+  });
+
+  it("should not be able to create a new student with same email", () => {
+    expect(async () => {
+      await createStudent.execute({
+        email: "email@test.com",
+        name: "John Doe",
+      });
+
+      await createStudent.execute({
+        email: "email@test.com",
+        name: "John Doe",
+      });
+    }).rejects.toEqual(new Error("This email enrolled already"));
   });
 });

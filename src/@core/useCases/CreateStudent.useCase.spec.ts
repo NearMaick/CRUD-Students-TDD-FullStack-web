@@ -11,6 +11,8 @@ interface IStudent {
 }
 
 class Student {
+  private props: IStudent;
+
   public get id() {
     return this.props.id!;
   }
@@ -43,7 +45,9 @@ class Student {
     this.props.createdAt = value;
   }
 
-  constructor(private props: IStudent) {
+  constructor(props: IStudent) {
+    this.props = props;
+
     this.props.id = randomUUID();
     this.props.createdAt = new Date();
   }
@@ -54,30 +58,42 @@ class Student {
 type IStudentDataRequestDTO = Omit<Student, "id" | "createdAt">;
 
 interface IStudentDataDTO {
-  data: IStudent;
+  props: IStudent;
 }
 
 //  ----------------
 interface StudentsRepository {
-  create(data: IStudent): Promise<void>;
+  create(data: IStudent): Promise<IStudent>;
   findByEmail(email: string): Promise<IStudentDataDTO | undefined>;
+  list(): Promise<IStudentDataDTO[]>;
 }
 
 export class InMemoryStudentsRepository implements StudentsRepository {
   public students: IStudentDataDTO[] = [];
-  async create({ id, name, email, createdAt }: IStudent): Promise<void> {
+  async create({ name, email }: IStudent): Promise<IStudent> {
+    const student = new Student({
+      email,
+      name,
+    });
+
     this.students.push({
-      data: {
-        id,
-        email,
-        name,
-        createdAt,
+      props: {
+        id: student.id,
+        email: student.email,
+        name: student.name,
+        createdAt: student.createdAt,
       },
     });
+
+    return student;
   }
 
   async findByEmail(email: string): Promise<IStudentDataDTO | undefined> {
-    return this.students.find((student) => student.data.email === email);
+    return this.students.find((student) => student.props.email === email);
+  }
+
+  async list(): Promise<IStudentDataDTO[]> {
+    return this.students;
   }
 }
 
@@ -93,12 +109,12 @@ class CreateStudentUseCase {
       throw new Error("This email enrolled already");
     }
 
-    const student = new Student({
+    const student = await this.studentsRepository.create({
       email,
       name,
     });
 
-    await this.studentsRepository.create(student);
+    return student;
   }
 }
 
@@ -118,14 +134,14 @@ describe("CreateStudent useCase", () => {
         name: "John Doe",
       })
     ).resolves.not.toThrow();
-    expect(inMemoryStudentsRepository.students[0].data.name).toEqual(
+    expect(inMemoryStudentsRepository.students[0].props.name).toEqual(
       "John Doe"
     );
-    expect(inMemoryStudentsRepository.students[0].data.email).toEqual(
+    expect(inMemoryStudentsRepository.students[0].props.email).toEqual(
       "email@test.com"
     );
-    expect(inMemoryStudentsRepository.students[0].data).toHaveProperty("id");
-    expect(inMemoryStudentsRepository.students[0].data).toHaveProperty(
+    expect(inMemoryStudentsRepository.students[0].props).toHaveProperty("id");
+    expect(inMemoryStudentsRepository.students[0].props).toHaveProperty(
       "createdAt"
     );
   });
@@ -142,5 +158,36 @@ describe("CreateStudent useCase", () => {
         name: "John Doe",
       });
     }).rejects.toEqual(new Error("This email enrolled already"));
+  });
+});
+
+class ListStudentsUseCase {
+  constructor(private studentsRepository: StudentsRepository) {}
+
+  async execute(): Promise<IStudentDataDTO[]> {
+    const students = this.studentsRepository.list();
+    return students;
+  }
+}
+
+describe("list students UseCase", () => {
+  let inMemoryStudentsRepository: InMemoryStudentsRepository;
+  let createStudent: CreateStudentUseCase;
+  let listStudents: ListStudentsUseCase;
+
+  beforeEach(() => {
+    inMemoryStudentsRepository = new InMemoryStudentsRepository();
+    createStudent = new CreateStudentUseCase(inMemoryStudentsRepository);
+    listStudents = new ListStudentsUseCase(inMemoryStudentsRepository);
+  });
+
+  it("should be able to list students", async () => {
+    const student = await createStudent.execute({
+      email: "email@test.com",
+      name: "John Doe",
+    });
+
+    const students = await listStudents.execute();
+    expect(students).toEqual([student]);
   });
 });

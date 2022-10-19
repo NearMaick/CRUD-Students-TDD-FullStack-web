@@ -1,5 +1,5 @@
 import { IStudentDataDTO } from "../DTOs/Student.dto";
-import { IStudentsRepository } from "../repositories/Students.repository";
+import { IStudentsRepository } from "../repositories/students.repository";
 
 export class ListStudentsUseCase {
   constructor(private studentsRepository: IStudentsRepository) {}

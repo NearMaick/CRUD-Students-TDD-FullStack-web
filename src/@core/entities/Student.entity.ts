@@ -1,45 +1,45 @@
 import { randomUUID } from "node:crypto";
-import { IStudent } from "../DTOs/Student.dto";
 
 export class Student {
-  private props: IStudent;
+  private _id?: string;
+  private _name: string;
+  private _email: string;
+  private _createdAt?: Date;
 
   public get id() {
-    return this.props.id!;
+    return this._id!;
   }
 
   public get name() {
-    return this.props.name;
+    return this._name;
   }
 
   public get email() {
-    return this.props.email;
+    return this._email;
   }
 
   public get createdAt() {
-    return this.props.createdAt!;
+    return this._createdAt!;
   }
 
   public set name(value: string) {
-    this.props.name = value;
+    this._name = value;
   }
 
   public set email(value: string) {
-    this.props.email = value;
+    this._email = value;
   }
 
   private set id(value: string) {
-    this.props.id = value;
+    this._id = value;
   }
 
   private set createdAt(value: Date) {
-    this.props.createdAt = value;
+    this._createdAt = value;
   }
 
-  constructor(props: IStudent) {
-    this.props = props;
-
-    this.props.id = randomUUID();
-    this.props.createdAt = new Date();
+  constructor() {
+    this._id = randomUUID();
+    this._createdAt = new Date();
   }
 }

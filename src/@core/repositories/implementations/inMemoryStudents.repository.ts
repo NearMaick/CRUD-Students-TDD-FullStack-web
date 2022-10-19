@@ -1,32 +1,23 @@
-import { IStudent, IStudentDataDTO } from "../../DTOs/Student.dto";
 import { Student } from "../../entities/Student.entity";
-import { IStudentsRepository } from "../Students.repository";
+import { IStudentsRepository } from "../students.repository";
 
 export class InMemoryStudentsRepository implements IStudentsRepository {
-  public students: IStudentDataDTO[] = [];
-  async create({ name, email }: IStudent): Promise<IStudent> {
-    const student = new Student({
-      email,
-      name,
-    });
+  public students: Student[] = [];
+  async create({ name, email }: Student): Promise<Student> {
+    const student = new Student();
+    student.name = name;
+    student.email = email;
 
-    this.students.push({
-      props: {
-        id: student.id,
-        email: student.email,
-        name: student.name,
-        createdAt: student.createdAt,
-      },
-    });
+    this.students.push(student);
 
     return student;
   }
 
-  async findByEmail(email: string): Promise<IStudentDataDTO | undefined> {
-    return this.students.find((student) => student.props.email === email);
+  async findByEmail(email: string): Promise<Student | undefined> {
+    return this.students.find((student) => student.email === email);
   }
 
-  async list(): Promise<IStudentDataDTO[]> {
+  async list(): Promise<Student[]> {
     return this.students;
   }
 }

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { InMemoryStudentsRepository } from "../repositories/implementations/InMemoryStudents.repository";
+import { InMemoryStudentsRepository } from "../repositories/implementations/inMemoryStudents.repository";
 import { CreateStudentUseCase } from "./CreateStudent.useCase";
 
 describe("CreateStudent useCase", () => {
@@ -18,16 +18,12 @@ describe("CreateStudent useCase", () => {
         name: "John Doe",
       })
     ).resolves.not.toThrow();
-    expect(inMemoryStudentsRepository.students[0].props.name).toEqual(
-      "John Doe"
-    );
-    expect(inMemoryStudentsRepository.students[0].props.email).toEqual(
+    expect(inMemoryStudentsRepository.students[0].name).toEqual("John Doe");
+    expect(inMemoryStudentsRepository.students[0].email).toEqual(
       "email@test.com"
     );
-    expect(inMemoryStudentsRepository.students[0].props).toHaveProperty("id");
-    expect(inMemoryStudentsRepository.students[0].props).toHaveProperty(
-      "createdAt"
-    );
+    expect(inMemoryStudentsRepository.students[0]).toHaveProperty("id");
+    expect(inMemoryStudentsRepository.students[0]).toHaveProperty("createdAt");
   });
 
   it("should not be able to create a new student with same email", () => {

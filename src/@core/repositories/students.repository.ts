@@ -1,7 +1,7 @@
-import { IStudent, IStudentDataDTO } from "../DTOs/Student.dto";
+import { Student } from "../entities/Student.entity";
 
 export interface IStudentsRepository {
-  create(data: IStudent): Promise<IStudent>;
-  findByEmail(email: string): Promise<IStudentDataDTO | undefined>;
-  list(): Promise<IStudentDataDTO[]>;
+  create({ name, email }: Student): Promise<Student>;
+  findByEmail(email: string): Promise<Student | undefined>;
+  list(): Promise<Student[]>;
 }

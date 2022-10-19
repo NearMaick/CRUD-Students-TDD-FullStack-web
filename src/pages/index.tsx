@@ -1,7 +1,17 @@
+import { GetServerSideProps } from "next";
 import { useState } from "react";
 import styled from "./styles/home.module.css";
 
-export default function Home() {
+interface StudentProps {
+  students: {
+    id: string;
+    email: string;
+    name: string;
+    createdAt: Date;
+  }[];
+}
+
+export default function Home({ students }: StudentProps) {
   const [name, setName] = useState("");
   const [list, setList] = useState([]);
 
@@ -25,10 +35,24 @@ export default function Home() {
         Enviar
       </button>
       <div className={styled.content}>
-        {list.map((item) => (
-          <p key={item}>{item}</p>
+        {students.map((item) => (
+          <div key={item.id}>
+            <pre>{JSON.stringify(item, null, 2)}</pre>
+            <p>{item.name}</p>
+          </div>
         ))}
       </div>
     </div>
   );
 }
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  const response = await fetch(
+    "http://localhost:3000/api/listStudentController"
+  );
+  const students = await response.json();
+
+  return {
+    props: { students },
+  };
+};

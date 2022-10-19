@@ -3,9 +3,10 @@ import styled from "./styles/home.module.css";
 
 export default function Home() {
   const [name, setName] = useState("");
+  const [list, setList] = useState([]);
 
   function handleSendName() {
-    console.log(name);
+    setList((state) => [...state, name]);
   }
 
   return (
@@ -24,8 +25,9 @@ export default function Home() {
         Enviar
       </button>
       <div className={styled.content}>
-        <p>Maick Souza</p>
-        <p>Enilda Maria</p>
+        {list.map((item) => (
+          <p key={item}>{item}</p>
+        ))}
       </div>
     </div>
   );

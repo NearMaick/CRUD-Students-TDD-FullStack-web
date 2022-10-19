@@ -1,10 +1,10 @@
-import { IStudentDataRequestDTO } from "../DTOs/Student.dto";
-import { IStudentsRepository } from "../repositories/Students.repository";
+import { Student } from "../entities/Student.entity";
+import { IStudentsRepository } from "../repositories/students.repository";
 
 export class CreateStudentUseCase {
   constructor(private studentsRepository: IStudentsRepository) {}
 
-  async execute({ name, email }: IStudentDataRequestDTO) {
+  async execute({ name, email }: Student) {
     const studentAlreadyExists = await this.studentsRepository.findByEmail(
       email
     );
@@ -13,10 +13,7 @@ export class CreateStudentUseCase {
       throw new Error("This email enrolled already");
     }
 
-    const student = await this.studentsRepository.create({
-      email,
-      name,
-    });
+    const student = await this.studentsRepository.create({ name, email });
 
     return student;
   }

@@ -16,3 +16,13 @@
 
 .content {
 }
+
+.button {
+  background: #333;
+  color: #eee;
+
+  padding: 0.25rem 1rem;
+  border-radius: 8px;
+
+  cursor: pointer;
+}

@@ -1,8 +1,6 @@
 import { Student } from "../../entities/Student.entity";
 import { IStudentsRepository } from "../students.repository";
 
-type ICreateStudentRepositoryDTO = Omit<"Student", "id, createdAt">;
-
 export class InMemoryStudentsRepository implements IStudentsRepository {
   public students: Student[] = [];
   async create({

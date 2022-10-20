@@ -3,19 +3,29 @@ import {
   ICreateStudentRepositoryDTO,
   IStudentsListDTO,
 } from "../../DTOs/student.dto";
-import { Student } from "../../entities/Student.entity";
 import { IStudentsRepository } from "../students.repository";
 
+const prisma = new PrismaClient();
 export class PrismaRepository implements IStudentsRepository {
-  create({ name, email }: ICreateStudentRepositoryDTO): Promise<Student> {
-    throw new Error("Method not implemented.");
+  async create({
+    name,
+    email,
+  }: ICreateStudentRepositoryDTO): Promise<IStudentsListDTO> {
+    const student = await prisma.student.create({
+      data: { name, email },
+    });
+    return student;
   }
-  findByEmail(email: string): Promise<Student> {
-    throw new Error("Method not implemented.");
-  }
-  async list(): Promise<IStudentsListDTO[]> {
-    const prisma = new PrismaClient();
 
+  async findByEmail(email: string): Promise<IStudentsListDTO | undefined> {
+    return prisma.student.findFirst({
+      where: {
+        email,
+      },
+    });
+  }
+
+  async list(): Promise<IStudentsListDTO[]> {
     return prisma.student.findMany();
   }
 }

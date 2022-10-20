@@ -1,3 +1,4 @@
+import axios from "axios";
 import { GetServerSideProps } from "next";
 import { useState } from "react";
 import styled from "./styles/home.module.css";
@@ -13,10 +14,19 @@ interface StudentProps {
 
 export default function Home({ students }: StudentProps) {
   const [name, setName] = useState("");
-  const [list, setList] = useState([]);
+  const [email, setEmail] = useState("");
+  const [studentsList, setStudentsList] = useState(students);
 
-  function handleSendName() {
-    setList((state) => [...state, name]);
+  async function handleSendStudent() {
+    const response = await axios.post(
+      "http://localhost:3000/api/createStudentController",
+      {
+        name,
+        email,
+      }
+    );
+    const content = await response.data;
+    setStudentsList((state) => [...state, content]);
   }
 
   return (
@@ -31,14 +41,24 @@ export default function Home({ students }: StudentProps) {
         type="text"
         placeholder="Digite o nome aqui"
       />
-      <button onClick={handleSendName} className={styled.button}>
+      <input
+        onChange={(event) => {
+          setEmail(event.target.value);
+        }}
+        value={email}
+        className={styled.input}
+        type="text"
+        placeholder="Digite o email aqui"
+      />
+      <button onClick={handleSendStudent} className={styled.button}>
         Enviar
       </button>
       <div className={styled.content}>
-        {students.map((item) => (
+        {studentsList.map((item) => (
           <div key={item.id}>
-            <pre>{JSON.stringify(item, null, 2)}</pre>
             <p>{item.name}</p>
+            <p>{item.email}</p>
+            <br />
           </div>
         ))}
       </div>
@@ -47,10 +67,10 @@ export default function Home({ students }: StudentProps) {
 }
 
 export const getServerSideProps: GetServerSideProps = async () => {
-  const response = await fetch(
+  const response = await axios.get(
     "http://localhost:3000/api/listStudentController"
   );
-  const students = await response.json();
+  const students = await response.data;
 
   return {
     props: { students },

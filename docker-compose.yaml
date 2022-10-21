@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  app:
+    build: .
+    container_name: crud_student
+    restart: always
+    ports:
+      - 3000:3000
+    volumes:
+      - .:/home/node/app
